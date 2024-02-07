@@ -1,4 +1,4 @@
--- cc_canvas
+-- cc-canvas
 -- 15 columns of MIDI CC's
 -- with slew and recall
 -- made for monome zero / 256

@@ -53,7 +53,7 @@ function params_lib.init()
 			snap_save.data[i] = snapshots[i].data
 		end
 		tab.save(snap_save, environment.state.data .. "/" .. number .. "/snapshots.data")
-		print("cc_canvas: finished writing snapshot data to PSET " .. number)
+		print("cc-canvas: finished writing snapshot data to PSET " .. number)
 	end
 
 	params.action_read = function(filename, silent, number)
@@ -65,13 +65,13 @@ function params_lib.init()
 			snapshots[i].data = snap_load.data[i]
 		end
 		surfaces_dirty = true
-		print("cc_canvas: finished reading snapshot data from PSET " .. number)
+		print("cc-canvas: finished reading snapshot data from PSET " .. number)
 	end
 
 	params.action_delete = function(filename, name, number)
 		local environment = seamstress ~= nil and seamstress or norns
 		norns.system_cmd("rm -r " .. environment.state.data .. "/" .. number .. "/")
-		print("cc_canvas: snapshot data deleted from PSET " .. number)
+		print("cc-canvas: snapshot data deleted from PSET " .. number)
 	end
 
 	params:bang()
