@@ -1,7 +1,19 @@
 -- cc_canvas
-
 -- 15 columns of MIDI CC's
 -- with slew and recall
+-- made for monome zero / 256
+-- 
+-- far-right column:
+--  16: ALT
+--   - hold reveals slew times
+--  15: ALL
+--   - hold to set all columns
+--     to pressed value
+--  1-14: snapshots
+--   - long press to save
+--   - short press to recall
+--     + ALT: delete
+--     + ALL: jump (no slew)
 
 _snap = include("lib/snapshots")
 _grid = include("lib/grid")
