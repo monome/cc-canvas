@@ -1,4 +1,4 @@
-# cc_canvas
+# cc-canvas
 
 Fifteen grid-controllable MIDI CC messages with slewing and snapshot recall.
 This project runs on both norns and seamstress.
