@@ -4,8 +4,8 @@ Fifteen grid-controllable MIDI CC messages with slewing and snapshot recall.
 This project runs on both norns and seamstress.
 Requires monome zero / 256, though script can be edited to accommodate any dimensions.
 
-Each column can be assigned a target MIDI device, channel, CC number and CC value -- see the system parameters menu for these settings.
-Each key in each column (1-15) sets CC value directly -- 127 at top, 7 at bottom, reselect current value to zero-out.
+Each column is a fader, which can be assigned a target MIDI device, channel, CC number and CC value -- see the system parameters menu for these settings.
+Each key in each fader column (1-15) sets CC value directly -- 127 at top, 7 at bottom, reselect current value to zero-out.
 
 snapshots @ `(16, 1-14)`
 - hold to capture current values as snapshot
