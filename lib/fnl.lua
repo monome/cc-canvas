@@ -50,7 +50,7 @@ function fnl_lib.trigger(x, val, from_snapshot)
 		local pre_val = _c.value
 		_c.fnl = fnl_lib.call(function(r_val)
 			_c.current_value = r_val
-			params:set("cc_mapval_" .. x, math.floor(util.linlin(0, 1, pre_val, target, r_val)))
+			params:set(cc_mapval_id[x], math.floor(util.linlin(0, 1, pre_val, target, r_val)))
 			if _c.current_value ~= nil and util.round(_c.current_value, 0.001) == 1 then
 				fnl_lib.done(x, target)
 			end

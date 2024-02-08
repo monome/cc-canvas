@@ -22,6 +22,7 @@ function params_lib.init()
 	end)
 
 	params:add_separator("MIDI output")
+	cc_mapval_id = {}
 	for i = 1, 15 do
 		params:add_group("column " .. i, 5)
 		params:add_option("ms_slew_" .. i, "slew (in ms)", cc_slews.ms, 1)
@@ -40,6 +41,7 @@ function params_lib.init()
 			midi_devices[port]:cc(cc_num, value, midi_ch)
 			surfaces_dirty = true
 		end)
+		cc_mapval_id[i] = params.lookup["cc_mapval_" .. i]
 	end
 
 	params.action_write = function(filename, name, number)
