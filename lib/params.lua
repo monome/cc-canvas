@@ -5,7 +5,7 @@ function params_lib.init()
 
 	params:add_option("display_mode", "display mode", { "standard", "low-power" }, 1)
 	params:set_action("display_mode", function(value)
-		display_mode = value == 1 and "standard" or "low-power"
+		_grid.draw.mode = value == 1 and _grid.draw.standard or _grid.draw.lowpower
 		surfaces_dirty = true
 	end)
 
@@ -14,9 +14,6 @@ function params_lib.init()
 		for i = 1, 15 do
 			local morphed = util.clamp(cc_cols[i].value + math.random(-10, 10), 0, 127)
 			local whole, part = math.modf(morphed / 8)
-			if i == 1 then
-				print(morphed, cc_cols[i].value, whole, part)
-			end
 			_fnl.trigger(i, morphed, { true, _all })
 		end
 	end)

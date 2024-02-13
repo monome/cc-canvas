@@ -2,7 +2,7 @@
 -- 15 columns of MIDI CC's
 -- with slew and recall
 -- made for monome zero / 256
--- 
+--
 -- far-right column:
 --  16: ALT
 --   - hold reveals slew times
@@ -23,7 +23,7 @@ _params = include("lib/params")
 function init()
 	check_redraw_flags = metro.init(function()
 		if surfaces_dirty then
-			_grid.draw()
+			_grid.draw.main()
 			redraw()
 			surfaces_dirty = false
 		end
@@ -77,6 +77,21 @@ function init()
 	midi_devices = {} -- build a table of connected MIDI devices for MIDI input + output
 	midi_device_names = {} -- index their names to display them in params
 
+	function midi.add(dev)
+		midi_device_names[dev.port] = dev.port .. ": " .. dev.name
+		if norns then
+			for i = 1, 15 do
+				params:lookup_param("midi_output_device_" .. i).options = midi_device_names
+			end
+		elseif seamstresss then
+			for i = 1, 15 do
+				params:lookup_param("midi_output_device_" .. i).formatter = function(param)
+					return midi_device_names[(type(param) == "table" and param:get() or param)]
+				end
+			end
+		end
+	end
+
 	for i = 1, #midi.vports do -- for each MIDI port:
 		midi_devices[i] = midi.connect(i) -- connect to the device
 		midi_device_names[i] = i .. ": " .. midi.vports[i].name -- log its name
@@ -86,20 +101,29 @@ function init()
 	_params.init()
 
 	surfaces_dirty = true
-	screen_surfaces_dirty = true
 end
 
 function redraw()
 	screen.clear()
 	for i = 1, 15 do
-		screen.level(math.floor(util.linlin(0, 127, 1, 15, cc_cols[i].value)))
 		if seamstress then
 			screen.move((i - 1) * 8, 0)
+			screen.color(
+				util.linlin(0, 127, 2 * i, 255, cc_cols[i].value),
+				util.linlin(0, 127, 3 * i, 100, cc_cols[i].value),
+				util.linlin(0, 127, 0, 15 * i, cc_cols[i].value)
+			)
 			screen.rect_fill(8, 64)
 		else
+			screen.level(math.floor(util.linlin(0, 127, 1, 15, cc_cols[i].value)))
 			screen.rect((i - 1) * 8, 0, 8, 64)
 			screen.fill()
 		end
 	end
 	screen.update()
+end
+
+function cleanup()
+	g:all(0)
+	g:refresh()
 end

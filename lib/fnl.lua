@@ -7,7 +7,7 @@ local fnl_lib = {}
 -- call a function repetitively in time
 -- the arg to the function is interpolated fps times per second
 -- dest_ms is a table
-function fnl_lib.call(fn, origin, dest_ms, fps)
+function fnl_lib.cycle(fn, origin, dest_ms, fps)
 	return clock.run(function()
 		fps = fps or 15 -- default
 		local spf = 1 / fps -- seconds per frame
@@ -48,7 +48,7 @@ function fnl_lib.trigger(x, val, from_snapshot)
 	else
 		_c.partial_restore = true
 		local pre_val = _c.value
-		_c.fnl = fnl_lib.call(function(r_val)
+		_c.fnl = fnl_lib.cycle(function(r_val)
 			_c.current_value = r_val
 			params:set(cc_mapval_id[x], math.floor(util.linlin(0, 1, pre_val, target, r_val)))
 			if _c.current_value ~= nil and util.round(_c.current_value, 0.001) == 1 then

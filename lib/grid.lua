@@ -1,9 +1,10 @@
 local grid_lib = {}
 
 g = grid.connect()
+grid_lib.draw = {}
 
-function g.add()
-	grid_surfaces_dirty = true
+function grid.add()
+	surfaces_dirty = true
 end
 
 function g.key(x, y, z)
@@ -57,82 +58,89 @@ function g.key(x, y, z)
 	surfaces_dirty = true
 end
 
-function grid_lib.draw()
-	g:all(0)
-	if display_mode == "standard" then
-		for x = 1, 15 do
-			-- background:
+function grid_lib.draw.standard()
+	for x = 1, 15 do
+		-- background:
+		for y = 1, 16 do
+			g:led(x, y, 3)
+		end
+		local _c = cc_cols[x]
+		-- if not holding _alt:
+		if not _alt then
+			-- columns, whole numbers::
+			local whole, part = math.modf(_c.value / 8)
+			for y = 1, whole do
+				g:led(x, 17 - y, 15)
+			end
+			-- columns, partial values:
+			if whole + part == 0 then
+				g:led(x, 16, 3)
+			else
+				g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 4, 15, 15 * part)))
+			end
+		else
 			for y = 1, 16 do
-				g:led(x, y, 3)
-			end
-			local _c = cc_cols[x]
-			-- if not holding _alt:
-			if not _alt then
-				-- columns, whole numbers::
-				local whole, part = math.modf(_c.value / 8)
-				for y = 1, whole do
-					g:led(x, 17 - y, 15)
-				end
-				-- columns, partial values:
-				if whole + part == 0 then
-					g:led(x, 16, 3)
-				else
-					g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 4, 15, 15 * part)))
-				end
-			else
-				for y = 1, 16 do
-					g:led(x, y, _c.slew_idx == 17 - y and 15 or 3)
-					if 17 - y < _c.slew_idx then
-						g:led(x, y, 8)
-					end
+				g:led(x, y, _c.slew_idx == 17 - y and 15 or 3)
+				if 17 - y < _c.slew_idx then
+					g:led(x, y, 8)
 				end
 			end
 		end
-		-- sidebar for snapshots:
-		for y = 1, 15 do
-			if #snapshots[y].data > 0 then
-				g:led(16, y, snapshots.focus == y and 15 or 8)
-			end
-		end
-		g:led(16, 15, _all and 12 or 3)
-		g:led(16, 16, _alt and 15 or 5)
-	elseif display_mode == "low-power" then
-		for x = 1, 15 do
-			local _c = cc_cols[x]
-			-- if not holding _alt:
-			if not _alt then
-				-- columns, whole numbers::
-				local whole, part = math.modf(_c.value / 8)
-				for y = 1, whole do
-					g:led(x, 17 - y, 3)
-				end
-				-- columns, partial values:
-				if whole + part == 0 then
-					g:led(x, 16, 0)
-				else
-					g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 0, 8, 15 * part)))
-				end
-				if _c.last_pressed ~= 0 then
-					g:led(x, 17 - _c.last_pressed, 8)
-				end
-			else
-				for y = 1, 16 do
-					g:led(x, y, _c.slew_idx == 17 - y and 15 or 3)
-					if 17 - y < _c.slew_idx then
-						g:led(x, y, 8)
-					end
-				end
-			end
-		end
-		-- sidebar for snapshots:
-		for y = 1, 15 do
-			if #snapshots[y].data > 0 then
-				g:led(16, y, snapshots.focus == y and 10 or 5)
-			end
-		end
-		g:led(16, 15, _all and 7 or 2)
-		g:led(16, 16, _alt and 10 or 3)
 	end
+	-- sidebar for snapshots:
+	for y = 1, 15 do
+		if #snapshots[y].data > 0 then
+			g:led(16, y, snapshots.focus == y and 15 or 8)
+		end
+	end
+	g:led(16, 15, _all and 12 or 3)
+	g:led(16, 16, _alt and 15 or 5)
+end
+
+function grid_lib.draw.lowpower()
+	for x = 1, 15 do
+		local _c = cc_cols[x]
+		-- if not holding _alt:
+		if not _alt then
+			-- columns, whole numbers::
+			local whole, part = math.modf(_c.value / 8)
+			for y = 1, whole do
+				g:led(x, 17 - y, 3)
+			end
+			-- columns, partial values:
+			if whole + part == 0 then
+				g:led(x, 16, 0)
+			else
+				g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 0, 8, 15 * part)))
+			end
+			if _c.last_pressed ~= 0 then
+				g:led(x, 17 - _c.last_pressed, 8)
+			end
+		else
+			for y = 1, 16 do
+				g:led(x, y, _c.slew_idx == 17 - y and 15 or 3)
+				if 17 - y < _c.slew_idx then
+					g:led(x, y, 8)
+				end
+			end
+		end
+	end
+	-- sidebar for snapshots:
+	for y = 1, 15 do
+		if #snapshots[y].data > 0 then
+			g:led(16, y, snapshots.focus == y and 10 or 5)
+		end
+	end
+	g:led(16, 15, _all and 7 or 2)
+	g:led(16, 16, _alt and 10 or 3)
+end
+
+-- default grid drawing to "standard" mode
+grid_lib.draw.mode = grid_lib.draw.standard
+
+function grid_lib.draw.main()
+	g:all(0)
+	grid_lib.draw.mode()
 	g:refresh()
 end
 
