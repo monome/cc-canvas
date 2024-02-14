@@ -1,7 +1,7 @@
 # cc-canvas
 
-Fifteen grid-controllable MIDI CC messages with slewing and snapshot recall.
-This project runs on both norns and seamstress.
+Fifteen grid-controllable MIDI CC messages with slewing and snapshot recall.  
+This project runs on both norns and seamstress.  
 Requires monome zero / 256, though script can be edited to accommodate any dimensions.
 
 Each column is a fader, which can be assigned a target MIDI device, channel, CC number and CC value -- see the system parameters menu for these settings.
