@@ -65,23 +65,23 @@ local function util_round(number, quant)
 end
 
 local function util_clamp(n, min, max)
-  return math.min(max,(math.max(n,min)))
+	return math.min(max, (math.max(n, min)))
 end
 
 local function util_linlin(slo, shi, dlo, dhi, f)
-  if f <= slo then
-    return dlo
-  elseif f >= shi then
-    return dhi
-  else
-    return (f-slo) / (shi-slo) * (dhi-dlo) + dlo
-  end
+	if f <= slo then
+		return dlo
+	elseif f >= shi then
+		return dhi
+	else
+		return (f - slo) / (shi - slo) * (dhi - dlo) + dlo
+	end
 end
 
 print("cc canvas")
 dirty = true
 redraw_metro = 1
-grid_fps = 50
+fnl_fps = 50
 
 -- a table to track our CC values:
 cc_cols = {}
@@ -92,9 +92,9 @@ for i = 0, 14 do
 	_c.absolute = 0
 	_c.pressed_key = -1
 	_c.last_pressed = 0
-	_c.slew_idx = 6
+	_c.slew_idx = 1
 	_c.partial_restore = false
-	_c.fnl_metro = 2+i
+	_c.fnl_metro = 2 + i
 	_c.origin = {}
 	_c.dest_ms = {}
 	_c.dest_target = {}
@@ -110,7 +110,7 @@ function metro(index, count)
 		redraw_grid()
 		dirty = false
 	elseif index ~= redraw_metro then
-		process_fnl_metro(index-2)
+		process_fnl_metro(index - 2)
 	end
 end
 
@@ -124,6 +124,7 @@ function process_fnl_metro(x)
 end
 
 function grid(x, y, z)
+	print(x, y, z)
 	if x <= 14 and z == 1 then
 		local prev_pressed = cc_cols[x].pressed_key
 		cc_cols[x].pressed_key = y
@@ -132,7 +133,7 @@ function grid(x, y, z)
 		end
 		y = 7 - y
 		local pressed_val = ((y + 1) * 16) - 1
-		fnl_trigger(x, pressed_val, {false})
+		fnl_trigger(x, pressed_val, { false })
 	end
 	dirty = true
 end
@@ -148,7 +149,7 @@ function redraw_grid()
 		local bright = cc_cols[x].pressed_key >= 0 and 7 or 3
 		grid_led(x, cc_cols[x].pressed_key, bright)
 
-		-- columns, whole numbers::
+		-- columns, whole numbers:
 		-- local whole, part = math.modf(_c.value / 8) -- this is for 256...
 		local whole, part = math.modf(_c.value / 16) -- this is for 256...
 		for y = 1, whole do
@@ -161,14 +162,13 @@ function redraw_grid()
 			-- g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 4, 15, 15 * part)))
 			grid_led(x, 7 - whole, math.floor(util_linlin(0, 15 * 0.875, 4, 15, 15 * part)))
 		end
-
 	end
 	grid_refresh()
 end
 
-function send_midi_out(x,value)
+function send_midi_out(x, value)
 	cc_cols[x].value = value
-	midi_tx(0, 0xb0+(cc_ch[x+1] - 1), cc_num[x+1], value)
+	midi_cc(cc_num[x + 1], value, cc_ch[x + 1])
 	dirty = true
 end
 
@@ -176,7 +176,7 @@ function fnl_step(x, r_val)
 	local _c = cc_cols[x]
 	_c.current_value = r_val
 	local scaled = math.floor(util_linlin(0, 1, _c.pre_val, _c.dest_target, r_val))
-	send_midi_out(x,scaled)
+	send_midi_out(x, scaled)
 	if _c.current_value ~= nil and util_round(_c.current_value, 0.001) == 1 then
 		fnl_done(x, _c.dest_target)
 		metro_stop(_c.fnl_metro)
@@ -210,9 +210,9 @@ function fnl_trigger(x, val, from_snapshot)
 		_c.dest_ms = slews[_c.slew_idx] / 1000
 		_c.dest_target = target
 		fnl_step(x, _c.origin)
-		_c.count = math.floor(_c.dest_ms * grid_fps) -- number of iterations
+		_c.count = math.floor(_c.dest_ms * fnl_fps) -- number of iterations
 		_c.stepsize = (1 - _c.origin) / _c.count -- how much to increment by each iteration
-		metro_set(_c.fnl_metro, 1000/50) -- 50fps in ms (needed as of 241203)
+		metro_set(_c.fnl_metro, 1000 / 50) -- 50fps in ms (needed as of 241203)
 	end
 end
 
@@ -225,8 +225,7 @@ function fnl_done(x, val)
 	if _c.value == 0 then
 		_c.pressed_key = -1
 	end
-	send_midi_out(x,val)
+	send_midi_out(x, val)
 end
 
-redraw_grid()
-metro_set(redraw_metro, 10)
+metro_set(redraw_metro, 20)
