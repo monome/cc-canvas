@@ -125,7 +125,7 @@ function snapshot_pack(slot)
 	end
 end
 
-function snapshot_unpack(slot,jump)
+function snapshot_unpack(slot, jump)
 	for i = 0, 14 do
 		cc_cols[i].pressed_key = -1
 		fnl_start(i, snapshots[slot].data[i], { true, jump })
@@ -202,10 +202,10 @@ function grid(x, y, z)
 				end
 			elseif not _alt then
 				if snapshots.focus == y then
-					snapshot_unpack(y,true)
+					snapshot_unpack(y, true)
 				else
 					snapshots.focus = y
-					snapshot_unpack(y,false)
+					snapshot_unpack(y, false)
 				end
 			else
 				if snapshot_being_saved == nil then
@@ -250,8 +250,8 @@ function redraw_grid()
 			grid_led(x, cc_cols[x].pressed_key, bright)
 
 			-- columns, whole numbers:
-			-- local whole, part = math.modf(_c.value / 8) -- this is for 256...
-			local whole, part = math.modf(_c.value / 16) -- this is for 256...
+			-- local whole, part = math.modf(_c.value / 8) -- this is for zero...
+			local whole, part = math.modf(_c.value / 16)
 			for y = 1, whole do
 				grid_led(x, 8 - y, max_brightness)
 			end
@@ -259,15 +259,14 @@ function redraw_grid()
 			if whole + part == 0 then
 				grid_led(x, 0, 3)
 			else
-				-- g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 4, 15, 15 * part)))
 				grid_led(
 					x,
-					7 - whole,
+					7 - whole, -- 15 for zero
 					math.floor(util_linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
 				)
 			end
 		else
-			local whole, part = math.modf(_c.slew_idx / 2) -- this is for 256...
+			local whole, part = math.modf(_c.slew_idx / 2)
 			for y = 1, whole do
 				grid_led(x, 8 - y, max_brightness)
 			end
@@ -275,7 +274,6 @@ function redraw_grid()
 			if whole + part == 0 then
 				grid_led(x, 0, 3)
 			else
-				-- g:led(x, 16 - whole, math.floor(util.linlin(0, 15 * 0.875, 4, 15, 15 * part)))
 				grid_led(
 					x,
 					7 - whole,
@@ -288,7 +286,8 @@ function redraw_grid()
 	-- snapshots:
 	for y = 0, 6 do
 		if #snapshots[y].data > 0 then
-			grid_led(15, y, snapshots.focus == y and max_brightness or 8)
+			local unselected = max_brightness > 12 and 8 or 5
+			grid_led(15, y, snapshots.focus == y and max_brightness or unselected)
 		end
 	end
 
