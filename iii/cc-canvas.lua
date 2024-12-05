@@ -125,10 +125,10 @@ function snapshot_pack(slot)
 	end
 end
 
-function snapshot_unpack(slot)
+function snapshot_unpack(slot,jump)
 	for i = 0, 14 do
 		cc_cols[i].pressed_key = -1
-		fnl_start(i, snapshots[slot].data[i], { true, _all })
+		fnl_start(i, snapshots[slot].data[i], { true, jump })
 	end
 end
 
@@ -170,6 +170,7 @@ end
 -- GRID //
 -- GRID KEY HANDLING:
 function grid(x, y, z)
+	-- ps("%s %s %s", x,y,z)
 	-- CC COLUMNS:
 	if x <= 14 and z == 1 then
 		if not slew_toggle then
@@ -200,8 +201,12 @@ function grid(x, y, z)
 					metro_set(snapshots_saver_metro, 250, 1)
 				end
 			elseif not _alt then
-				snapshots.focus = y
-				snapshot_unpack(y)
+				if snapshots.focus == y then
+					snapshot_unpack(y,true)
+				else
+					snapshots.focus = y
+					snapshot_unpack(y,false)
+				end
 			else
 				if snapshot_being_saved == nil then
 					snapshot_being_saved = y
