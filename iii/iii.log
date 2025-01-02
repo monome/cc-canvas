@@ -1,19 +1,22 @@
-2024-12-31 20:13:28,669 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:29,597 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:31,404 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:32,454 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:34,478 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:35,442 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:37,268 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:38,179 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:40,103 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:41,307 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:43,325 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:44,620 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:46,443 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:48,545 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:50,556 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:51,574 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:13:53,692 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
-2024-12-31 20:13:55,108 diii.iii        ERROR   MainProcess lost connection: read failed: [Errno 6] Device not configured
-2024-12-31 20:14:11,852 diii.iii        INFO    MainProcess connected to device on /dev/cu.usbmodemm27028251
+2025-01-02 10:03:18,439 diii.iii        INFO    MainProcess connected to device on COM6
+2025-01-02 10:03:21,612 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:04:31,879 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:08:50,945 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:09:26,083 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:12:11,203 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:12:43,604 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:13:36,793 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:13:43,800 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:15:20,236 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:16:17,566 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:19:34,588 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:20:07,935 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:21:11,077 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:24:23,744 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:24:58,520 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:25:05,283 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:26:34,673 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:27:35,195 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:29:19,090 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:29:31,074 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
+2025-01-02 10:32:34,049 diii.iii        INFO    MainProcess opened file: <_io.TextIOWrapper name='cc-canvas-zero.lua' mode='r' encoding='cp1252'>
