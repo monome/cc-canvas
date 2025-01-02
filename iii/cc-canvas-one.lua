@@ -209,7 +209,7 @@ function grid(x, y, z)
 			end
 			y = 7 - y
 			local pressed_val = ((y + 1) * 16) - 1
-			fnl_start(x, pressed_val, { false })
+			fnl_start(x, pressed_val, { false, _alt })
 		else
 			y = 7 - y
 			local change = (y + 1) * 2
@@ -418,10 +418,10 @@ function fnl_done(x, val)
 		_c.fnl_metro_running = false
 		_c.partial_restore = false
 	end
+	send_midi_out(x, val)
 	if _c.value == 0 then
 		_c.pressed_key = -1
 	end
-	send_midi_out(x, val)
 end
 
 metro_set(intro_metro, 50)
