@@ -64,6 +64,17 @@ local slews = {
 	10120,
 }
 
+local start_time = get_time()
+local dirty = true
+local intro_metro = 1
+local intro_level = 10
+local intro_duration = 1000
+local intro_complete = false
+local redraw_metro = 2
+local snapshots_saver_metro = 3
+local fnl_fps = 50
+
+-- UTILITIES //
 local function util_round(number, quant)
 	if quant == 0 then
 		return number
@@ -86,10 +97,20 @@ local function util_linlin(slo, shi, dlo, dhi, f)
 	end
 end
 
-local dirty = true
-local redraw_metro = 1
-local snapshots_saver_metro = 2
-local fnl_fps = 50
+local function util_wrap(n, min, max)
+	if max < min then
+		local temp = min
+		min = max
+		max = temp
+	end
+	if n >= min and n <= max then
+		return n
+	end
+	local d = max - min + 1
+	local y = (n - min) % d
+	return y + min
+end
+-- // UTILITIES
 
 -- a table to track our CC values:
 cc_cols = {}
@@ -139,20 +160,28 @@ function snapshot_save(slot)
 	else
 		snapshot_clear(slot)
 	end
-	surfaces_dirty = true
+	dirty = true
 end
 
 function snapshot_clear(slot)
 	snapshots[slot].data = {}
-	surfaces_dirty = true
+	dirty = true
 end
 -- // SNAPSHOTS
 
 -- METRO //
 -- redraw_metro is index 1
 function metro(index, count)
-	if index == redraw_metro and dirty then
-		if dirty then
+	if index == intro_metro then
+		if get_time() - start_time >= intro_duration then
+			metro_set(intro_metro, 0)
+			intro_complete = true
+			dirty = true
+		else
+			draw_intro()
+		end
+	elseif index == redraw_metro and dirty then
+		if intro_complete then
 			redraw_grid()
 			dirty = false
 		end
@@ -232,7 +261,21 @@ function grid(x, y, z)
 	dirty = true
 end
 
--- GRID REDRAW:
+-- GRID REDRAWS:
+function draw_intro()
+	grid_led_all(0)
+	for i = 3,5 do
+		grid_led(i+1, 2, intro_level)
+		grid_led(i+1, 5, intro_level)
+		grid_led(4, i, intro_level)
+		grid_led(i+6, 2, intro_level)
+		grid_led(i+6, 5, intro_level)
+		grid_led(9, i, intro_level)
+	end
+	intro_level = util_wrap(intro_level - 1, 1, 10)
+	grid_refresh()
+end
+
 function redraw_grid()
 	-- clear LEDs:
 	grid_led_all(0)
@@ -388,4 +431,5 @@ function fnl_done(x, val)
 	send_midi_out(x, val)
 end
 
+metro_set(intro_metro, 50)
 metro_set(redraw_metro, 20) -- (1000/50), 50fps in ms [needed as of 241203]
