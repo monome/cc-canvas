@@ -74,47 +74,9 @@ local redraw_metro = 2
 local snapshots_saver_metro = 3
 local fnl_fps = 50
 
--- UTILITIES //
-local function util_round(number, quant)
-	if quant == 0 then
-		return number
-	else
-		return math.floor(number / (quant or 1) + 0.5) * (quant or 1)
-	end
-end
-
-local function util_clamp(n, min, max)
-	return math.min(max, (math.max(n, min)))
-end
-
-local function util_linlin(slo, shi, dlo, dhi, f)
-	if f <= slo then
-		return dlo
-	elseif f >= shi then
-		return dhi
-	else
-		return (f - slo) / (shi - slo) * (dhi - dlo) + dlo
-	end
-end
-
-local function util_wrap(n, min, max)
-	if max < min then
-		local temp = min
-		min = max
-		max = temp
-	end
-	if n >= min and n <= max then
-		return n
-	end
-	local d = max - min + 1
-	local y = (n - min) % d
-	return y + min
-end
--- // UTILITIES
-
 -- a table to track our CC values:
 cc_cols = {}
-for i = 0, 14 do
+for i = 1, 15 do
 	cc_cols[i] = {}
 	local _c = cc_cols[i]
 	_c.value = 0
@@ -122,7 +84,6 @@ for i = 0, 14 do
 	_c.pressed_key = -1
 	_c.slew_idx = 2
 	_c.partial_restore = false
-	_c.fnl_metro = 2 + i
 	_c.origin = {}
 	_c.dest_ms = {}
 	_c.dest_target = {}
@@ -134,19 +95,19 @@ end
 -- SNAPSHOTS //
 -- a table to track our snapshots:
 local snapshots = {}
-for i = 0, 14 do
+for i = 1, 15 do
 	snapshots[i] = {}
 	snapshots[i].data = {}
 end
 
 function snapshot_pack(slot)
-	for i = 0, 14 do
+	for i = 1, 15 do
 		snapshots[slot].data[i] = cc_cols[i].absolute
 	end
 end
 
 function snapshot_unpack(slot, jump)
-	for i = 0, 14 do
+	for i = 1, 15 do
 		cc_cols[i].pressed_key = -1
 		fnl_start(i, snapshots[slot].data[i], { true, jump })
 	end
@@ -200,18 +161,19 @@ end
 function grid(x, y, z)
 	-- ps("%s %s %s", x,y,z)
 	-- CC COLUMNS:
-	if x <= 14 and z == 1 then
+	if x <= 15 and z == 1 then
 		if not slew_toggle then
 			local prev_pressed = cc_cols[x].pressed_key
 			cc_cols[x].pressed_key = y
 			if prev_pressed == cc_cols[x].pressed_key then
 				cc_cols[x].pressed_key = -1
 			end
-			y = 15 - y
+			y = 16 - y
 			local pressed_val = ((y + 1) * 8) - 1
+			print(pressed_val)
 			fnl_start(x, pressed_val, { false, _alt })
 		else
-			y = 15 - y
+			y = 16 - y
 			local change = (y + 1) * 2
 			if cc_cols[x].slew_idx == change then
 				cc_cols[x].slew_idx = cc_cols[x].slew_idx - 1
@@ -221,7 +183,7 @@ function grid(x, y, z)
 		end
 
 		-- GRID SNAPSHOT MANAGEMENT:
-	elseif x == 15 and y <= 13 then
+	elseif x == 16 and y <= 14 then
 		if z == 1 then
 			if #snapshots[y].data == 0 then
 				if snapshot_being_saved == nil then
@@ -249,11 +211,11 @@ function grid(x, y, z)
 		end
 
 	-- SLEW TOGGLE:
-	elseif x == 15 and y == 14 then
+	elseif x == 16 and y == 15 then
 		slew_toggle = z == 1
 
 	-- ALT KEY:
-	elseif x == 15 and y == 15 then
+	elseif x == 16 and y == 16 then
 		_alt = z == 1
 	end
 
@@ -263,15 +225,15 @@ end
 -- GRID REDRAWS:
 function draw_intro()
 	grid_led_all(0)
-	for i = 3,5 do
-		grid_led(i+1, 6, intro_level)
-		grid_led(i+1, 9, intro_level)
-		grid_led(4, i+4, intro_level)
-		grid_led(i+6, 6, intro_level)
-		grid_led(i+6, 9, intro_level)
-		grid_led(9, i+4, intro_level)
+	for i = 4,6 do
+		grid_led(i+1, 7, intro_level)
+		grid_led(i+1, 10, intro_level)
+		grid_led(5, i+4, intro_level)
+		grid_led(i+6, 7, intro_level)
+		grid_led(i+6, 10, intro_level)
+		grid_led(10, i+4, intro_level)
 	end
-	intro_level = util_wrap(intro_level - 1, 1, 10)
+	intro_level = wrap(intro_level - 1, 1, 10)
 	grid_refresh()
 end
 
@@ -279,11 +241,11 @@ function redraw_grid()
 	-- clear LEDs:
 	grid_led_all(0)
 
-	for x = 0, 14 do
+	for x = 1, 15 do
 		local _c = cc_cols[x]
 
 		-- base canvas:
-		for y = 0, 15 do
+		for y = 1, 16 do
 			grid_led(x, y, 3)
 		end
 		if not slew_toggle then
@@ -294,7 +256,7 @@ function redraw_grid()
 			-- columns, whole numbers:
 			local whole, part = math.modf(_c.value / 8)
 			for y = 1, whole do
-				grid_led(x, 16 - y, max_brightness)
+				grid_led(x, 17 - y, max_brightness)
 			end
 			-- columns, partial values:
 			if whole + part == 0 then
@@ -302,14 +264,14 @@ function redraw_grid()
 			else
 				grid_led(
 					x,
-					15 - whole, -- 15 for zero
-					math.floor(util_linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
+					16 - whole, -- 15 for zero
+					math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
 				)
 			end
 		else
 			local whole, part = math.modf(_c.slew_idx / 2)
 			for y = 1, whole do
-				grid_led(x, 16 - y, max_brightness)
+				grid_led(x, 17 - y, max_brightness)
 			end
 			-- columns, partial values:
 			if whole + part == 0 then
@@ -317,15 +279,15 @@ function redraw_grid()
 			else
 				grid_led(
 					x,
-					15 - whole,
-					math.floor(util_linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
+					16 - whole,
+					math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
 				)
 			end
 		end
 	end
 
 	-- snapshots:
-	for y = 0, 13 do
+	for y = 1, 14 do
 		if #snapshots[y].data > 0 then
 			local unselected = max_brightness > 12 and 8 or 5
 			grid_led(15, y, snapshots.focus == y and max_brightness or unselected)
@@ -333,10 +295,10 @@ function redraw_grid()
 	end
 
 	-- slew toggle:
-	grid_led(15, 14, slew_toggle and max_brightness or 5)
+	grid_led(16, 15, slew_toggle and max_brightness or 5)
 
 	-- _alt:
-	grid_led(15, 15, _alt and max_brightness or 5)
+	grid_led(16, 16, _alt and max_brightness or 5)
 
 	grid_refresh()
 end
@@ -353,7 +315,7 @@ end
 
 -- metro callback to process each fnl
 function fnl_process_metro()
-	for i = 0, #cc_cols do
+	for i = 1, #cc_cols do
 		local _c = cc_cols[i]
 		if _c.fnl_metro_running then
 			if _c.count > 0 then
@@ -369,11 +331,11 @@ end
 function fnl_step(x, r_val)
 	local _c = cc_cols[x]
 	_c.current_value = r_val
-	local scaled = math.floor(util_linlin(0, 1, _c.pre_val, _c.dest_target, r_val))
+	local scaled = math.floor(linlin(0, 1, _c.pre_val, _c.dest_target, r_val))
 	-- send midi for each scaled step:
 	send_midi_out(x, scaled)
 	-- if we're at the end of the fnl, call it 'done' and stop the metro iteration:
-	if _c.current_value ~= nil and util_round(_c.current_value, 0.001) == 1 then
+	if _c.current_value ~= nil and round(_c.current_value, 0.001) == 1 then
 		fnl_done(x, _c.dest_target)
 		_c.fnl_metro_running = false
 	end
@@ -390,7 +352,7 @@ function fnl_start(x, val, from_snapshot)
 	if from_snapshot[1] then
 		target = val
 	else
-		target = _c.value == util_clamp(0, 127, val) and 0 or val
+		target = _c.value == clamp(0, 127, val) and 0 or val
 	end
 	_c.absolute = target
 	-- if there's no slew, then just jump to done:
