@@ -1,5 +1,5 @@
 -- cc canvas (for iii devices)
--- 250102
+-- 250121
 
 -- cc numbers:
 -- EDIT THESE!
@@ -64,6 +64,7 @@ local slews = {
 	10120,
 }
 
+local grid_size = grid_size_x() * grid_size_y()
 local start_time = get_time()
 local dirty = true
 local intro_metro = 1
@@ -75,7 +76,7 @@ local snapshots_saver_metro = 3
 local fnl_fps = 50
 
 -- a table to track our CC values:
-cc_cols = {}
+local cc_cols = {}
 for i = 1, 15 do
 	cc_cols[i] = {}
 	local _c = cc_cols[i]
@@ -156,63 +157,73 @@ end
 -- // METRO
 
 -- GRID //
+
+function change_value(x,y)
+	local prev_pressed = cc_cols[x].pressed_key
+	cc_cols[x].pressed_key = y
+	if prev_pressed == cc_cols[x].pressed_key then
+		cc_cols[x].pressed_key = -1
+	end
+	y = grid_size_y() - y
+	local pressed_val = ((y + 1) * (grid_size == 128 and 16 or 8)) - 1
+	fnl_start(x, pressed_val, { false, _alt })
+end
+
+function change_slew(x,y)
+	y = grid_size_y() - y
+	local change = (y + 1) * 2
+	if cc_cols[x].slew_idx == change then
+		cc_cols[x].slew_idx = cc_cols[x].slew_idx - 1
+	else
+		cc_cols[x].slew_idx = change
+	end
+end
+
+function snapshot_press(x,y,z)
+	if z == 1 then
+		if #snapshots[y].data == 0 then
+			if snapshot_being_saved == nil then
+				snapshot_being_saved = y
+				metro_set(snapshots_saver_metro, 250, 1)
+			end
+		elseif not _alt then
+			if snapshots.focus == y then
+				snapshot_unpack(y, true)
+			else
+				snapshots.focus = y
+				snapshot_unpack(y, false)
+			end
+		else
+			if snapshot_being_saved == nil then
+				snapshot_being_saved = y
+				metro_set(snapshots_saver_metro, 250, 1)
+			end
+		end
+	else
+		if snapshot_being_saved ~= nil then
+			metro_stop(snapshots_saver_metro)
+			snapshot_being_saved = nil
+		end
+	end
+end
+
 -- GRID KEY HANDLING:
 function grid(x, y, z)
 	-- CC COLUMNS:
 	if x <= 15 and z == 1 then
 		if not slew_toggle then
-			local prev_pressed = cc_cols[x].pressed_key
-			cc_cols[x].pressed_key = y
-			if prev_pressed == cc_cols[x].pressed_key then
-				cc_cols[x].pressed_key = -1
-			end
-			y = 8 - y
-			local pressed_val = ((y + 1) * 16) - 1
-			fnl_start(x, pressed_val, { false, _alt })
+			change_value(x,y)
 		else
-			y = 8 - y
-			local change = (y + 1) * 2
-			if cc_cols[x].slew_idx == change then
-				cc_cols[x].slew_idx = cc_cols[x].slew_idx - 1
-			else
-				cc_cols[x].slew_idx = change
-			end
+			change_slew(x, y)
 		end
-
-		-- GRID SNAPSHOT MANAGEMENT:
-	elseif x == 16 and y <= 6 then
-		if z == 1 then
-			if #snapshots[y].data == 0 then
-				if snapshot_being_saved == nil then
-					snapshot_being_saved = y
-					metro_set(snapshots_saver_metro, 250, 1)
-				end
-			elseif not _alt then
-				if snapshots.focus == y then
-					snapshot_unpack(y, true)
-				else
-					snapshots.focus = y
-					snapshot_unpack(y, false)
-				end
-			else
-				if snapshot_being_saved == nil then
-					snapshot_being_saved = y
-					metro_set(snapshots_saver_metro, 250, 1)
-				end
-			end
-		else
-			if snapshot_being_saved ~= nil then
-				metro_stop(snapshots_saver_metro)
-				snapshot_being_saved = nil
-			end
-		end
-
+	-- GRID SNAPSHOT MANAGEMENT:
+	elseif x == 16 and y <= (grid_size == 128 and 6 or 14) then
+		snapshot_press(x,y,z)
 	-- SLEW TOGGLE:
-	elseif x == 16 and y == 7 then
+	elseif x == 16 and y == (grid_size == 128 and 7 or 15) then
 		slew_toggle = z == 1
-
 	-- ALT KEY:
-	elseif x == 16 and y == 8 then
+	elseif x == 16 and y == grid_size_y() then
 		_alt = z == 1
 	end
 
@@ -223,15 +234,64 @@ end
 function draw_intro()
 	grid_led_all(0)
 	for i = 4,6 do
-		grid_led(i+1, 3, intro_level)
-		grid_led(i+1, 6, intro_level)
-		grid_led(5, i, intro_level)
-		grid_led(i+6, 3, intro_level)
-		grid_led(i+6, 6, intro_level)
-		grid_led(10, i, intro_level)
+		grid_led(i+1, grid_size == 128 and 3 or 7, intro_level)
+		grid_led(i+1, grid_size == 128 and 6 or 10, intro_level)
+		grid_led(5, grid_size == 128 and i or i+4, intro_level)
+		grid_led(i+6, grid_size == 128 and 3 or 7, intro_level)
+		grid_led(i+6, grid_size == 128 and 6 or 10, intro_level)
+		grid_led(10, grid_size == 128 and i or i+4, intro_level)
 	end
 	intro_level = wrap(intro_level - 1, 1, 10)
 	grid_refresh()
+end
+
+function draw_ccs(x)
+	local _c = cc_cols[x]
+	-- pressed/destination pad:
+	local bright = cc_cols[x].pressed_key >= 0 and 7 or 3
+	grid_led(x, cc_cols[x].pressed_key, bright)
+	-- columns, whole numbers:
+	local whole, part = math.modf(_c.value / (grid_size == 128 and 16 or 8))
+	for y = 1, whole do
+		grid_led(x, (grid_size == 128 and 9 or 17) - y, max_brightness)
+	end
+	-- columns, partial values:
+	if whole + part == 0 then
+		grid_led(x, 0, 3)
+	else
+		grid_led(
+			x,
+			grid_size_y() - whole,
+			math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
+		)
+	end
+end
+
+function draw_slews(x)
+	local _c = cc_cols[x]
+	local whole, part = math.modf(_c.slew_idx / 2)
+	for y = 1, whole do
+		grid_led(x, (grid_size == 128 and 9 or 17) - y, max_brightness)
+	end
+	-- columns, partial values:
+	if whole + part == 0 then
+		grid_led(x, 0, 3)
+	else
+		grid_led(
+			x,
+			grid_size_y() - whole,
+			math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
+		)
+	end
+end
+
+function draw_snapshots()
+	for y = 1, grid_size == 128 and 7 or 14 do
+		if #snapshots[y].data > 0 then
+			local unselected = max_brightness > 12 and 8 or 5
+			grid_led(16, y, snapshots.focus == y and max_brightness or unselected)
+		end
+	end
 end
 
 function redraw_grid()
@@ -239,64 +299,25 @@ function redraw_grid()
 	grid_led_all(0)
 
 	for x = 1, 15 do
-		local _c = cc_cols[x]
-
 		-- base canvas:
 		for y = 1, 16 do
 			grid_led(x, y, 3)
 		end
 		if not slew_toggle then
-			-- pressed/destination pad:
-			local bright = cc_cols[x].pressed_key >= 0 and 7 or 3
-			grid_led(x, cc_cols[x].pressed_key, bright)
-
-			-- columns, whole numbers:
-			-- local whole, part = math.modf(_c.value / 8) -- this is for zero...
-			local whole, part = math.modf(_c.value / 16)
-			for y = 1, whole do
-				grid_led(x, 9 - y, max_brightness)
-			end
-			-- columns, partial values:
-			if whole + part == 0 then
-				grid_led(x, 0, 3)
-			else
-				grid_led(
-					x,
-					8 - whole, -- 15 for zero
-					math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
-				)
-			end
+			draw_ccs(x)
 		else
-			local whole, part = math.modf(_c.slew_idx / 2)
-			for y = 1, whole do
-				grid_led(x, 9 - y, max_brightness)
-			end
-			-- columns, partial values:
-			if whole + part == 0 then
-				grid_led(x, 0, 3)
-			else
-				grid_led(
-					x,
-					8 - whole,
-					math.floor(linlin(0, max_brightness * 0.875, 4, max_brightness, max_brightness * part))
-				)
-			end
+			draw_slews(x)
 		end
 	end
 
 	-- snapshots:
-	for y = 1, 7 do
-		if #snapshots[y].data > 0 then
-			local unselected = max_brightness > 12 and 8 or 5
-			grid_led(16, y, snapshots.focus == y and max_brightness or unselected)
-		end
-	end
+	draw_snapshots()
 
 	-- slew toggle:
-	grid_led(16, 7, slew_toggle and max_brightness or 5)
+	grid_led(16, grid_size == 128 and 7 or 15, slew_toggle and max_brightness or 5)
 
 	-- _alt:
-	grid_led(16, 8, _alt and max_brightness or 5)
+	grid_led(16, grid_size == 128 and 8 or 16, _alt and max_brightness or 5)
 
 	grid_refresh()
 end
@@ -308,7 +329,7 @@ function send_midi_out(x, value)
 	dirty = true
 end
 
--- fnl //
+-- FNL //
 -- fnl's (funnel's) make slewed changes between two data points
 
 -- metro callback to process each fnl
@@ -382,6 +403,7 @@ function fnl_done(x, val)
 		_c.pressed_key = -1
 	end
 end
+-- // FNL
 
 metro_set(intro_metro, 50)
 metro_set(redraw_metro, 20) -- (1000/50), 50fps in ms [needed as of 241203]
